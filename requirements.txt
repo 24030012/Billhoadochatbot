@@ -1,0 +1,385 @@
+import streamlit as st
+from datetime import datetime
+
+# =========================
+# CẤU HÌNH TRANG
+# =========================
+st.set_page_config(
+    page_title="Quán Trà Sữa",
+    page_icon="🧋",
+    layout="centered"
+)
+
+# =========================
+# CSS GIAO DIỆN
+# =========================
+st.markdown("""
+<style>
+    .main {
+        background-color: #fff8fb;
+    }
+
+    h1 {
+        text-align: center;
+        color: #d63384;
+    }
+
+    .subtitle {
+        text-align: center;
+        color: #777;
+        margin-bottom: 25px;
+    }
+
+    .total-box {
+        background-color: #ffe3ef;
+        padding: 18px;
+        border-radius: 12px;
+        text-align: center;
+        margin-top: 15px;
+    }
+
+    .total-price {
+        color: #d63384;
+        font-size: 28px;
+        font-weight: bold;
+    }
+
+    .invoice {
+        background-color: white;
+        padding: 25px;
+        border-radius: 15px;
+        border: 2px solid #f3b6d2;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    .invoice-title {
+        text-align: center;
+        color: #d63384;
+        font-size: 25px;
+        font-weight: bold;
+    }
+
+    .invoice-total {
+        font-size: 22px;
+        font-weight: bold;
+        color: #d63384;
+        text-align: right;
+    }
+</style>
+""", unsafe_allow_html=True)
+
+# =========================
+# DỮ LIỆU MENU
+# =========================
+
+tra_sua = {
+    "Trà sữa truyền thống": 30000,
+    "Trà sữa socola": 35000,
+    "Trà sữa matcha": 35000,
+    "Trà sữa khoai môn": 35000,
+    "Trà sữa dâu": 35000,
+    "Trà sữa caramel": 38000,
+    "Trà sữa trân châu đường đen": 40000
+}
+
+topping = {
+    "Không thêm topping": 0,
+    "Trân châu đen": 5000,
+    "Trân châu trắng": 5000,
+    "Thạch trái cây": 5000,
+    "Thạch phô mai": 7000,
+    "Pudding trứng": 7000,
+    "Kem cheese": 10000
+}
+
+mon_them = {
+    "Không thêm món": 0,
+    "Bánh flan": 15000,
+    "Bánh tiramisu": 25000,
+    "Khoai tây chiên": 25000,
+    "Gà viên": 30000,
+    "Xúc xích": 20000
+}
+
+gia_size = {
+    "Size M": 0,
+    "Size L": 5000
+}
+
+# =========================
+# TIÊU ĐỀ
+# =========================
+
+st.title("🧋 QUÁN TRÀ SỮA")
+st.markdown(
+    '<p class="subtitle">Ứng dụng tính hóa đơn trà sữa</p>',
+    unsafe_allow_html=True
+)
+
+# =========================
+# THÔNG TIN KHÁCH HÀNG
+# =========================
+
+st.header("👤 Thông tin khách hàng")
+
+ten_khach = st.text_input(
+    "Tên khách hàng",
+    placeholder="Nhập tên khách hàng..."
+)
+
+st.divider()
+
+# =========================
+# CHỌN TRÀ SỮA
+# =========================
+
+st.header("🧋 Chọn trà sữa")
+
+col1, col2 = st.columns(2)
+
+with col1:
+    ten_tra = st.selectbox(
+        "Loại trà sữa",
+        list(tra_sua.keys())
+    )
+
+with col2:
+    size = st.selectbox(
+        "Size ly",
+        list(gia_size.keys())
+    )
+
+so_luong = st.number_input(
+    "Số lượng",
+    min_value=1,
+    max_value=50,
+    value=1,
+    step=1
+)
+
+col3, col4 = st.columns(2)
+
+with col3:
+    muc_duong = st.selectbox(
+        "Mức độ đường",
+        ["0% - Không đường",
+         "30% - Ít đường",
+         "50% - Vừa",
+         "70% - Ngọt",
+         "100% - Rất ngọt"]
+    )
+
+with col4:
+    muc_da = st.selectbox(
+        "Mức độ đá",
+        ["0% - Không đá",
+         "30% - Ít đá",
+         "50% - Vừa",
+         "70% - Nhiều đá",
+         "100% - Rất nhiều đá"]
+    )
+
+st.divider()
+
+# =========================
+# TOPPING
+# =========================
+
+st.header("🍮 Topping")
+
+topping_chon = st.selectbox(
+    "Chọn topping",
+    list(topping.keys())
+)
+
+st.divider()
+
+# =========================
+# MÓN THÊM
+# =========================
+
+st.header("🍰 Món ăn thêm")
+
+co_mon_them = st.checkbox("Có thêm món")
+
+if co_mon_them:
+    mon_chon = st.selectbox(
+        "Chọn món thêm",
+        [x for x in mon_them.keys() if x != "Không thêm món"]
+    )
+
+    so_luong_mon = st.number_input(
+        "Số lượng món thêm",
+        min_value=1,
+        max_value=20,
+        value=1,
+        step=1
+    )
+else:
+    mon_chon = "Không thêm món"
+    so_luong_mon = 0
+
+st.divider()
+
+# =========================
+# TÍNH TIỀN
+# =========================
+
+gia_tra = tra_sua[ten_tra]
+gia_size_ly = gia_size[size]
+gia_topping = topping[topping_chon]
+
+gia_mot_ly = gia_tra + gia_size_ly + gia_topping
+
+tien_tra_sua = gia_mot_ly * so_luong
+
+if co_mon_them:
+    tien_mon_them = mon_them[mon_chon] * so_luong_mon
+else:
+    tien_mon_them = 0
+
+tong_tien = tien_tra_sua + tien_mon_them
+
+# =========================
+# HIỂN THỊ KẾT QUẢ
+# =========================
+
+st.header("📋 Thông tin đơn hàng")
+
+if not ten_khach.strip():
+    st.warning("⚠️ Vui lòng nhập tên khách hàng.")
+else:
+
+    st.write(f"**👤 Khách hàng:** {ten_khach}")
+    st.write(f"**🧋 Trà sữa:** {ten_tra}")
+    st.write(f"**📏 Size:** {size}")
+    st.write(f"**🔢 Số lượng:** {so_luong}")
+    st.write(f"**🍬 Đường:** {muc_duong}")
+    st.write(f"**🧊 Đá:** {muc_da}")
+    st.write(f"**🍮 Topping:** {topping_chon}")
+
+    if co_mon_them:
+        st.write(
+            f"**🍰 Món thêm:** {mon_chon} × {so_luong_mon}"
+        )
+
+    st.markdown(
+        f"""
+        <div class="total-box">
+            <div>TỔNG THANH TOÁN</div>
+            <div class="total-price">
+                {tong_tien:,.0f} VNĐ
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    st.write("")
+
+    # =========================
+    # NÚT THANH TOÁN
+    # =========================
+
+    thanh_toan = st.button(
+        "💳 THANH TOÁN",
+        use_container_width=True,
+        type="primary"
+    )
+
+    # =========================
+    # HÓA ĐƠN
+    # =========================
+
+    if thanh_toan:
+
+        thoi_gian = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+
+        st.success("✅ Thanh toán thành công!")
+
+        st.markdown("---")
+
+        st.markdown(
+            '<div class="invoice">',
+            unsafe_allow_html=True
+        )
+
+        st.markdown(
+            '<div class="invoice-title">🧋 HÓA ĐƠN TRÀ SỮA 🧋</div>',
+            unsafe_allow_html=True
+        )
+
+        st.markdown(
+            f"""
+            **Quán Trà Sữa**
+
+            **Khách hàng:** {ten_khach}
+
+            **Thời gian:** {thoi_gian}
+
+            ---
+            """
+        )
+
+        # Chi tiết trà sữa
+        st.markdown("### 🧋 Chi tiết đồ uống")
+
+        st.write(
+            f"**{ten_tra} - {size}** × {so_luong}"
+        )
+
+        st.write(
+            f"Đường: {muc_duong}"
+        )
+
+        st.write(
+            f"Đá: {muc_da}"
+        )
+
+        if topping_chon != "Không thêm topping":
+            st.write(
+                f"Topping: {topping_chon} "
+                f"(+{gia_topping:,.0f} VNĐ/ly)"
+            )
+
+        st.write(
+            f"Tiền trà sữa: **{tien_tra_sua:,.0f} VNĐ**"
+        )
+
+        # Món thêm
+        if co_mon_them:
+            st.markdown("### 🍰 Món thêm")
+
+            st.write(
+                f"{mon_chon} × {so_luong_mon}"
+            )
+
+            st.write(
+                f"Tiền món thêm: "
+                f"**{tien_mon_them:,.0f} VNĐ**"
+            )
+
+        st.markdown("---")
+
+        st.markdown(
+            f"""
+            <div class="invoice-total">
+                TỔNG CỘNG: {tong_tien:,.0f} VNĐ
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+        st.markdown(
+            """
+            <p style="text-align:center; margin-top:20px;">
+                💗 Cảm ơn quý khách! Hẹn gặp lại 💗
+            </p>
+            """,
+            unsafe_allow_html=True
+        )
+
+        st.markdown(
+            '</div>',
+            unsafe_allow_html=True
+        )
